@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "OwershipRoles.h"
+#include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -74,13 +75,7 @@ void AOwershipRolesCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FString LocalRoleStr = ROLE_TO_STRING(GetLocalRole());
-	FString RemoteRoleStr = ROLE_TO_STRING(GetRemoteRole());
-	FString OwnerStr = GetOwner() ? GetOwner()->GetName() : TEXT("No Owner");
-	FString ConnectionStr = GetNetConnection() ? TEXT("Valid Connection") : TEXT("Invalid Connection");
-	FString Values = FString::Printf(TEXT("LocalRole = %s\nRemoteRole = %s\nOwner = %s\nConnection = %s"), *LocalRoleStr, *RemoteRoleStr, *OwnerStr, *ConnectionStr);
-
-	DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
+	TestReplicate();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -141,4 +136,40 @@ void AOwershipRolesCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AOwershipRolesCharacter::TestOwnership()
+{
+	FString LocalRoleStr = ROLE_TO_STRING(GetLocalRole());
+	FString RemoteRoleStr = ROLE_TO_STRING(GetRemoteRole());
+	FString OwnerStr = GetOwner() ? GetOwner()->GetName() : TEXT("No Owner");
+	FString ConnectionStr = GetNetConnection() ? TEXT("Valid Connection") : TEXT("Invalid Connection");
+	FString Values = FString::Printf(TEXT("LocalRole = %s\nRemoteRole = %s\nOwner = %s\nConnection = %s"), *LocalRoleStr, *RemoteRoleStr, *OwnerStr, *ConnectionStr);
+
+	DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
+}
+
+void AOwershipRolesCharacter::TestReplicate()
+{
+	if (HasAuthority())
+	{
+		A++;
+		B++;
+	}
+
+	FString Values = FString::Printf(TEXT("A = %.2f		B = %d"), A, B);
+	DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
+}
+
+void AOwershipRolesCharacter::OnRepNotify_B()
+{
+	FString string = FString::Printf(TEXT("B was changed by the server and is now %d!"), B);
+	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, string);
+}
+
+void AOwershipRolesCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AOwershipRolesCharacter, A);
+	DOREPLIFETIME_CONDITION(AOwershipRolesCharacter, B, COND_OwnerOnly);
 }

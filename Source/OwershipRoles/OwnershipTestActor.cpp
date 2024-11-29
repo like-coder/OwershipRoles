@@ -21,6 +21,11 @@ AOwnershipTestActor::AOwnershipTestActor()
 void AOwnershipTestActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	TestOwnership();
+}
+
+void AOwnershipTestActor::TestOwnership()
+{
 	DrawDebugSphere(GetWorld(), GetActorLocation(), OwnershipRadius, 32, FColor::Yellow);
 
 	//fwq特定的功能
@@ -46,14 +51,12 @@ void AOwnershipTestActor::Tick(float DeltaTime)
 		{
 			SetOwner(NextOwner);
 		}
-
-		FString LocalRoleStr = ROLE_TO_STRING(GetLocalRole());
-		FString RemoteRoleStr = ROLE_TO_STRING(GetRemoteRole());
-		FString OwnerStr = GetOwner() ? GetOwner()->GetName() : TEXT("No Owner");
-		FString ConnectionStr = GetNetConnection() ? TEXT("Valid Connection") : TEXT("Invalid Connection");
-		FString Values = FString::Printf(TEXT("LocalRole = %s\nRemoteRole = %s\nOwner = %s\nConnection = %s"), *LocalRoleStr, *RemoteRoleStr, *OwnerStr, *ConnectionStr);
-
-		DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
 	}
-}
+	FString LocalRoleStr = ROLE_TO_STRING(GetLocalRole());
+	FString RemoteRoleStr = ROLE_TO_STRING(GetRemoteRole());
+	FString OwnerStr = GetOwner() ? GetOwner()->GetName() : TEXT("No Owner");
+	FString ConnectionStr = GetNetConnection() ? TEXT("Valid Connection") : TEXT("Invalid Connection");
+	FString Values = FString::Printf(TEXT("LocalRole = %s\nRemoteRole = %s\nOwner = %s\nConnection = %s"), *LocalRoleStr, *RemoteRoleStr, *OwnerStr, *ConnectionStr);
 
+	DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
+}

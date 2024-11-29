@@ -15,6 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	AOwnershipTestActor();
 
+	void TestOwnership();
+
 protected:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

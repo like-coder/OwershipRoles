@@ -46,7 +46,8 @@ class AOwershipRolesCharacter : public ACharacter
 
 public:
 	AOwershipRolesCharacter();
-	
+	void TestOwnership();
+	void TestReplicate();
 
 protected:
 
@@ -71,5 +72,15 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+protected:
+	UPROPERTY(Replicated)
+	float A = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRepNotify_B)
+	int32 B;
+
+	UFUNCTION()
+	void OnRepNotify_B();
 };
 
