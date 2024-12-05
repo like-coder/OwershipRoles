@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "OwershipRoles.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -54,6 +55,7 @@ AOwershipRolesCharacter::AOwershipRolesCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AOwershipRolesCharacter::BeginPlay()
@@ -75,7 +77,7 @@ void AOwershipRolesCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	TestReplicate();
+	//TestReplicate();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,6 +102,7 @@ void AOwershipRolesCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AOwershipRolesCharacter::ServerFire);
 }
 
 void AOwershipRolesCharacter::Move(const FInputActionValue& Value)
@@ -161,6 +164,12 @@ void AOwershipRolesCharacter::TestReplicate()
 	DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
 }
 
+void AOwershipRolesCharacter::TestRPCCharacter()
+{
+	FString AmmoNumString = FString::Printf(TEXT("Ammo = %d"), Ammo);
+	DrawDebugString(GetWorld(), GetActorLocation(), AmmoNumString, nullptr, FColor::White, 0.f, true);
+}
+
 void AOwershipRolesCharacter::OnRepNotify_B()
 {
 	FString string = FString::Printf(TEXT("B was changed by the server and is now %d!"), B);
@@ -171,5 +180,50 @@ void AOwershipRolesCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AOwershipRolesCharacter, A);
+	DOREPLIFETIME(AOwershipRolesCharacter, Ammo);
 	DOREPLIFETIME_CONDITION(AOwershipRolesCharacter, B, COND_OwnerOnly);
+}
+
+
+/*****************17.01Project*******************/
+bool AOwershipRolesCharacter::ServerFire_Validate()
+{
+	return true;
+}
+
+
+void AOwershipRolesCharacter::ServerFire_Implementation()
+{
+	//判断上一次开火计时器是否活跃，否则终止该函数
+	if (GetWorldTimerManager().IsTimerActive(FireTimer))
+	{
+		return;
+	}
+
+	if (Ammo == 0)
+	{
+		//判断是否有弹药
+		CilentPlaySound2D(NoAmmoSound);
+		return;
+	}
+
+	Ammo--;
+	GetWorldTimerManager().SetTimer(FireTimer, 1.0f, false);
+	MulticastFire();			//调用开火多播，使客户端播放开火动画
+}
+
+void AOwershipRolesCharacter::MulticastFire_Implementation()
+{
+	if (FireAnimMontage->IsValidLowLevel())
+	{
+		PlayAnimMontage(FireAnimMontage);
+	}
+}
+
+void AOwershipRolesCharacter::CilentPlaySound2D_Implementation(USoundBase* sound)
+{
+	if (NoAmmoSound->IsValidLowLevel())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), sound);
+	}
 }
