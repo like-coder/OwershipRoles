@@ -48,6 +48,7 @@ public:
 	AOwershipRolesCharacter();
 	void TestOwnership();
 	void TestReplicate();
+	void TestRPCCharacter();
 
 protected:
 
@@ -74,6 +75,22 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 protected:
+	/**********17.01Project*******************/
+	FTimerHandle FireTimer;
+	UPROPERTY(Replicated)
+	int32 Ammo = 5;
+	UPROPERTY(EditDefaultsOnly, Category = "RPC Character")
+	UAnimMontage* FireAnimMontage;				//播放动画
+	UPROPERTY(EditDefaultsOnly, Category = "RPC Character")
+	USoundBase* NoAmmoSound;					//播放声音
+	UFUNCTION(Server, Reliable, WithValidation, Category = "RPC Character")
+	void ServerFire();							//用于触发可靠fwq开火
+	UFUNCTION(NetMulticast, Unreliable, Category = "RPC Character")
+	void MulticastFire();						//用于触发不可靠khd开火动画
+	UFUNCTION(Client, Unreliable, Category = "RPC Character")
+	void CilentPlaySound2D(USoundBase* sound);	//用于触发不可靠khd开火声音
+
+	/*****16.04Project******/
 	UPROPERTY(Replicated)
 	float A = 100.f;
 
