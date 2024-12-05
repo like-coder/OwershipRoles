@@ -78,6 +78,7 @@ void AOwershipRolesCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//TestReplicate();
+	TestRPCCharacter();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,6 +104,7 @@ void AOwershipRolesCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AOwershipRolesCharacter::ServerFire);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AOwershipRolesCharacter::ServerReload);
 }
 
 void AOwershipRolesCharacter::Move(const FInputActionValue& Value)
@@ -199,6 +201,7 @@ void AOwershipRolesCharacter::ServerFire_Implementation()
 	{
 		return;
 	}
+	
 
 	if (Ammo == 0)
 	{
@@ -225,5 +228,30 @@ void AOwershipRolesCharacter::CilentPlaySound2D_Implementation(USoundBase* sound
 	if (NoAmmoSound->IsValidLowLevel())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), sound);
+	}
+}
+
+bool AOwershipRolesCharacter::ServerReload_Validate()
+{
+	return true;
+}
+
+void AOwershipRolesCharacter::ServerReload_Implementation()
+{
+	//判断子弹数量是否满的，若不是则换弹
+	if (Ammo == 5)
+	{
+		return;
+	}
+
+	MulticastReload();
+	Ammo = 5;
+}
+
+void AOwershipRolesCharacter::MulticastReload_Implementation()
+{
+	if (ReloadSound->IsValidLowLevel())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), ReloadSound);
 	}
 }

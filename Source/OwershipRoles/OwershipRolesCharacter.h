@@ -82,13 +82,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "RPC Character")
 	UAnimMontage* FireAnimMontage;				//播放动画
 	UPROPERTY(EditDefaultsOnly, Category = "RPC Character")
-	USoundBase* NoAmmoSound;					//播放声音
+	USoundBase* NoAmmoSound;					//播放没子弹的声音
+	UPROPERTY(EditDefaultsOnly, Category = "RPC Character")
+	USoundBase* ReloadSound;					//播放没子弹的声音
 	UFUNCTION(Server, Reliable, WithValidation, Category = "RPC Character")
 	void ServerFire();							//用于触发可靠fwq开火
 	UFUNCTION(NetMulticast, Unreliable, Category = "RPC Character")
 	void MulticastFire();						//用于触发不可靠khd开火动画
 	UFUNCTION(Client, Unreliable, Category = "RPC Character")
 	void CilentPlaySound2D(USoundBase* sound);	//用于触发不可靠khd开火声音
+	UFUNCTION(Server, Reliable, WithValidation, Category = "RPC Character")
+	void ServerReload();						//用于触发可靠fwq换弹
+	UFUNCTION(NetMulticast, Unreliable, Category = "RPC Character")
+	void MulticastReload();						//用于触发不可靠khd换弹
 
 	/*****16.04Project******/
 	UPROPERTY(Replicated)
