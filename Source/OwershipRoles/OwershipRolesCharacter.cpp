@@ -71,6 +71,9 @@ void AOwershipRolesCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	const int32 AmmoTypeCount = ENUM_TO_INT32(EAmmoType::Max);
+	Ammos.Init(10, AmmoTypeCount);
 }
 
 void AOwershipRolesCharacter::Tick(float DeltaTime)
@@ -78,7 +81,8 @@ void AOwershipRolesCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//TestReplicate();
-	TestRPCCharacter();
+	//TestRPCCharacter();
+	TestEnum();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,6 +109,10 @@ void AOwershipRolesCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AOwershipRolesCharacter::ServerFire);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AOwershipRolesCharacter::ServerReload);
+
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AOwershipRolesCharacter::Pistol);
+	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AOwershipRolesCharacter::Shotgun);
+	PlayerInputComponent->BindAction("Rocket Launcher", IE_Pressed, this, &AOwershipRolesCharacter::RocketLauncher);
 }
 
 void AOwershipRolesCharacter::Move(const FInputActionValue& Value)
@@ -172,6 +180,16 @@ void AOwershipRolesCharacter::TestRPCCharacter()
 	DrawDebugString(GetWorld(), GetActorLocation(), AmmoNumString, nullptr, FColor::White, 0.f, true);
 }
 
+void AOwershipRolesCharacter::TestEnum()
+{
+	int32 WeaponIndex = ENUM_TO_INT32(Weapon);
+	FString WeaponString = ENUM_TO_FSTRING("EWeaponType", Weapon);
+	FString AmmoTypeString = ENUM_TO_FSTRING("EAmmoType", Weapon);
+	int32 AmmoCount = Ammos[WeaponIndex];
+	FString String = FString::Printf(TEXT("Weapon = %s\nAmmo Type = %s\nAmmo Count = %d"), *WeaponString, *AmmoTypeString, AmmoCount);
+	DrawDebugString(GetWorld(), GetActorLocation(), String, nullptr, FColor::White, 0.f, true);
+}
+
 void AOwershipRolesCharacter::OnRepNotify_B()
 {
 	FString string = FString::Printf(TEXT("B was changed by the server and is now %d!"), B);
@@ -201,16 +219,17 @@ void AOwershipRolesCharacter::ServerFire_Implementation()
 	{
 		return;
 	}
-	
 
-	if (Ammo == 0)
+	int32 WeaponIndex = ENUM_TO_INT32(Weapon);
+	if (Ammos[WeaponIndex] == 0)
 	{
 		//判断是否有弹药
 		CilentPlaySound2D(NoAmmoSound);
 		return;
 	}
+	int32 NewAmmoCount = FMath::Max(Ammos[WeaponIndex] - 1, 0);
+	Ammos[WeaponIndex] = NewAmmoCount;
 
-	Ammo--;
 	GetWorldTimerManager().SetTimer(FireTimer, 1.0f, false);
 	MulticastFire();			//调用开火多播，使客户端播放开火动画
 }
@@ -238,14 +257,15 @@ bool AOwershipRolesCharacter::ServerReload_Validate()
 
 void AOwershipRolesCharacter::ServerReload_Implementation()
 {
+	int32 WeaponIndex = ENUM_TO_INT32(Weapon);
 	//判断子弹数量是否满的，若不是则换弹
-	if (Ammo == 5)
+	if (Ammos[WeaponIndex] == 10)
 	{
 		return;
 	}
 
 	MulticastReload();
-	Ammo = 5;
+	Ammos[WeaponIndex] = 10;
 }
 
 void AOwershipRolesCharacter::MulticastReload_Implementation()
@@ -254,4 +274,17 @@ void AOwershipRolesCharacter::MulticastReload_Implementation()
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), ReloadSound);
 	}
+}
+
+void AOwershipRolesCharacter::Pistol()
+{
+	Weapon = EWeaponType::Pistol;
+}
+void AOwershipRolesCharacter::Shotgun()
+{
+	Weapon = EWeaponType::Shotgun;
+}
+void AOwershipRolesCharacter::RocketLauncher()
+{
+	Weapon = EWeaponType::RocketLauncher;
 }

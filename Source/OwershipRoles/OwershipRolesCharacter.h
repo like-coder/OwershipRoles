@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "MyEnum.h"
 #include "OwershipRolesCharacter.generated.h"
 
 class USpringArmComponent;
@@ -49,6 +50,7 @@ public:
 	void TestOwnership();
 	void TestReplicate();
 	void TestRPCCharacter();
+	void TestEnum();
 
 protected:
 
@@ -95,6 +97,16 @@ protected:
 	void ServerReload();						//用于触发可靠fwq换弹
 	UFUNCTION(NetMulticast, Unreliable, Category = "RPC Character")
 	void MulticastReload();						//用于触发不可靠khd换弹
+
+	/**********17.03Project*******************/
+	UPROPERTY(BlueprintReadOnly, Category = "Enumerations Character")
+	EWeaponType Weapon;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enumerations Character")
+	TArray<int32> Ammos;
+
+	void Pistol();
+	void Shotgun();
+	void RocketLauncher();
 
 	/*****16.04Project******/
 	UPROPERTY(Replicated)
