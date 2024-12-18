@@ -56,6 +56,15 @@ AOwershipRolesCharacter::AOwershipRolesCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 	PrimaryActorTick.bCanEverTick = true;
+
+	//初始化Charter的AbilitySystemComponent(用于处理角色的各种能力)
+	AbilitySystemComponent = CreateDefaultSubobject<UAuraAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	//开启服务端复制,将该组件的状态和行为在网络环境下从服务器同步到客户端
+	AbilitySystemComponent->SetIsReplicated(true);
+	//初始化Charter的AttributeSet(通常用于存储和管理角色的各种属性（Attributes），比如生命值、魔法值、攻击力等)
+	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>(TEXT("AttributeSet"));
+	//服务端复制的方式(Full:单人游戏/与服务器强关联的多人游戏（MOBA）, Mixed:玩家控制的Actors, Minimal:AI)
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 }
 
 void AOwershipRolesCharacter::BeginPlay()
@@ -287,4 +296,29 @@ void AOwershipRolesCharacter::Shotgun()
 void AOwershipRolesCharacter::RocketLauncher()
 {
 	Weapon = EWeaponType::RocketLauncher;
+}
+
+
+void AOwershipRolesCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	//为服务器初始化 AbilityActorInfo
+	InitAbilityActorInfo();
+}
+
+void AOwershipRolesCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	//为客户端初始化 AbilityActorInfo
+	InitAbilityActorInfo();
+}
+
+void AOwershipRolesCharacter::InitAbilityActorInfo()
+{
+	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	//初始化PlayerState中ASC的信息
+	AuraPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AuraPlayerState, this);
+	//将PlayerState中的ASC和AS赋给Character,因为在Character构造函数中没有为ASC和AS赋值
+	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
+	AttributeSet = AuraPlayerState->GetAttributeSet();
 }
