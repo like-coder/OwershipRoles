@@ -20,7 +20,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AOwershipRolesCharacter : public ACharacter
+class AOwershipRolesCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -62,6 +62,8 @@ public:
 	// PlayerState 初始化时也会调用该函数
 	virtual void OnRep_PlayerState() override;
 	void InitAbilityActorInfo();
+	//获取AbilitySystem,继承IAbilitySystemInterface接口,重写函数
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 

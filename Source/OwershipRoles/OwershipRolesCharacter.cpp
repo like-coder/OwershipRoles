@@ -321,4 +321,10 @@ void AOwershipRolesCharacter::InitAbilityActorInfo()
 	//将PlayerState中的ASC和AS赋给Character,因为在Character构造函数中没有为ASC和AS赋值
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AuraPlayerState->GetAttributeSet();
+	AbilitySystemComponent->AddSpawnedAttribute(AttributeSet);
+}
+
+UAbilitySystemComponent* AOwershipRolesCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
