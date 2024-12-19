@@ -122,6 +122,9 @@ void AOwershipRolesCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AOwershipRolesCharacter::Pistol);
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AOwershipRolesCharacter::Shotgun);
 	PlayerInputComponent->BindAction("Rocket Launcher", IE_Pressed, this, &AOwershipRolesCharacter::RocketLauncher);
+
+	FGameplayAbilityInputBinds AbilityInput("ConfirmInput", "CancelInput", "AbilityInput");
+	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, AbilityInput);
 }
 
 void AOwershipRolesCharacter::Move(const FInputActionValue& Value)
@@ -304,6 +307,7 @@ void AOwershipRolesCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	//为服务器初始化 AbilityActorInfo
 	InitAbilityActorInfo();
+	AbilitySystemComponent->RefreshAbilityActorInfo();
 }
 
 void AOwershipRolesCharacter::OnRep_PlayerState()
@@ -322,6 +326,14 @@ void AOwershipRolesCharacter::InitAbilityActorInfo()
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AuraPlayerState->GetAttributeSet();
 	AbilitySystemComponent->AddSpawnedAttribute(AttributeSet);
+	Ability = AuraPlayerState->GetAbility();
+	FGameplayAbilityActorInfo* actorInfo = new FGameplayAbilityActorInfo();
+	actorInfo->InitFromActor(AuraPlayerState, this, AbilitySystemComponent);
+	AbilitySystemComponent->AbilityActorInfo = TSharedPtr<FGameplayAbilityActorInfo>(actorInfo);
+	if (HasAuthority() && Ability)
+	{
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, 0));
+	}
 }
 
 UAbilitySystemComponent* AOwershipRolesCharacter::GetAbilitySystemComponent() const

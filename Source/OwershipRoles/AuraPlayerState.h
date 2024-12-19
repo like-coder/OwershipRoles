@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "AbilitySystemInterface.h"
+#include "Abilities/GameplayAbility.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AuraPlayerState.generated.h"
@@ -22,10 +23,16 @@ public:
     virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
     //获取AttributeSet
     UAttributeSet* GetAttributeSet() const { return AttributeSet; }
+
+    //获取Ability
+    UGameplayAbility* GetAbility() const { return Ability; }
 protected:
     //GAS系统
     UPROPERTY()
     TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
     UPROPERTY()
     TObjectPtr<UAttributeSet> AttributeSet;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+    TObjectPtr<UGameplayAbility> Ability;
 };
