@@ -22,16 +22,13 @@ public:
     //获取AbilitySystem,继承IAbilitySystemInterface接口,重写函数
     virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
     //获取AttributeSet
-    UAttributeSet* GetAttributeSet() const { return AttributeSet; }
-
-    //获取Ability
-    UGameplayAbility* GetAbility() const { return Ability; }
+    UAuraAttributeSet* GetAttributeSet() const { return AttributeSet; }
 protected:
     //GAS系统
     UPROPERTY()
-    TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-    UPROPERTY()
-    TObjectPtr<UAttributeSet> AttributeSet;
+	TObjectPtr<UAuraAbilitySystemComponent> AbilitySystemComponent;
+	UPROPERTY()
+	TObjectPtr<UAuraAttributeSet> AttributeSet;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
     TObjectPtr<UGameplayAbility> Ability;

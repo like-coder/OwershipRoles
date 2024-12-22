@@ -13,8 +13,6 @@ AAuraPlayerState::AAuraPlayerState()
     AbilitySystemComponent->SetIsReplicated(true);
     //初始化敌人类的AttributeSet
     AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");
-
-    Ability = CreateDefaultSubobject<UGameplayAbility>("Ability");
     //服务端复制的方式(Full:单人游戏/与服务器强关联的多人游戏（MOBA）, Mixed:玩家控制的Actors, Minimal:AI)
     AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 }

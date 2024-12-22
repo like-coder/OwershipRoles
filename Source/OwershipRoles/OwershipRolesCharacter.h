@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "MyEnum.h"
 #include "AuraPlayerState.h"
+#include "AbilitySystem/AureGameplayAbility.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "OwershipRolesCharacter.generated.h"
@@ -62,6 +63,7 @@ public:
 	// PlayerState 初始化时也会调用该函数
 	virtual void OnRep_PlayerState() override;
 	void InitAbilityActorInfo();
+	void AddCharacterAbilities();
 	//获取AbilitySystem,继承IAbilitySystemInterface接口,重写函数
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
@@ -133,12 +135,13 @@ protected:
 
 
 	/**************Learn GAS*******************/
+	UInputComponent* MyInputComponent;
 	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UAuraAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY()
-	TObjectPtr<UAttributeSet> AttributeSet;
+	TObjectPtr<UAuraAttributeSet> AttributeSet;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	TObjectPtr<class UGameplayAbility> Ability;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	TArray<TSubclassOf<class UAureGameplayAbility>> Abilities;
 };
 

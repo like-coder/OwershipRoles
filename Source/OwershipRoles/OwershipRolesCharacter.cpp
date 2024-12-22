@@ -99,6 +99,7 @@ void AOwershipRolesCharacter::Tick(float DeltaTime)
 
 void AOwershipRolesCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	MyInputComponent = PlayerInputComponent;
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
@@ -323,17 +324,31 @@ void AOwershipRolesCharacter::InitAbilityActorInfo()
 	//初始化PlayerState中ASC的信息
 	AuraPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AuraPlayerState, this);
 	//将PlayerState中的ASC和AS赋给Character,因为在Character构造函数中没有为ASC和AS赋值
-	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
+	AbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent());
 	AttributeSet = AuraPlayerState->GetAttributeSet();
 	AbilitySystemComponent->AddSpawnedAttribute(AttributeSet);
-	Ability = AuraPlayerState->GetAbility();
-	FGameplayAbilityActorInfo* actorInfo = new FGameplayAbilityActorInfo();
-	actorInfo->InitFromActor(AuraPlayerState, this, AbilitySystemComponent);
-	AbilitySystemComponent->AbilityActorInfo = TSharedPtr<FGameplayAbilityActorInfo>(actorInfo);
-	if (HasAuthority() && Ability)
+	//FGameplayAbilityActorInfo* actorInfo = new FGameplayAbilityActorInfo();
+	//actorInfo->InitFromActor(AuraPlayerState, this, AbilitySystemComponent);
+	//AbilitySystemComponent->AbilityActorInfo = TSharedPtr<FGameplayAbilityActorInfo>(actorInfo);
+	AddCharacterAbilities();
+}
+
+void AOwershipRolesCharacter::AddCharacterAbilities()
+{
+	// 仅在服务器上赋能
+	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent->IsValidLowLevel() || AbilitySystemComponent->CharacterAbilitiesGiven)
 	{
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, 0));
+		return;
 	}
+	//初始技能，只调用一次
+	for (TSubclassOf<UAureGameplayAbility>& StartupAbility : Abilities)
+	{
+		AbilitySystemComponent->GiveAbility(
+			FGameplayAbilitySpec(StartupAbility, StartupAbility.GetDefaultObject()->AbilityLevel, static_cast<int32>(StartupAbility.GetDefaultObject()->AbilityInputID), this));
+	}
+
+	AbilitySystemComponent->CharacterAbilitiesGiven = true;
+
 }
 
 UAbilitySystemComponent* AOwershipRolesCharacter::GetAbilitySystemComponent() const

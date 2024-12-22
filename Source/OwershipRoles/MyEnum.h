@@ -35,3 +35,20 @@ enum class AbilityInput : uint8
 	//which can be negative while enums cannot. In fact, a constant called "INDEX_NONE" exists for the exact purpose of rendering an input as unavailable, and it's simply defined as -1.
 	//Because abilities are granted by input ID, which is an int, you may use enum elements to describe the ID anyway however, because enums are fancily dressed up ints.
 };
+
+UENUM(BlueprintType)
+//在Overlap开始时还是结束时应用Effect效果
+enum class EEffectApplicationPolicy : uint8
+{
+	ApplyOnOverlap,
+	ApplyOnEndOverlap,
+	DoNotApply
+};
+
+//在Overlap结束时是否移除Effect效果（无限时长的Effect）
+UENUM(BlueprintType)
+enum class EEffectRemovalPolicy : uint8
+{
+	RemoveOnEndOverlap,
+	DoNotRemove
+};
